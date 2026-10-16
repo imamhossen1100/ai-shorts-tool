@@ -8,21 +8,18 @@ from google.genai import types
 
 # Page Config
 st.set_page_config(
-    page_title="ClipCraft AI | SaaS Video Automation",
+    page_title="ClipCraft AI Studio",
     page_icon="⚡",
     layout="wide"
 )
 
-# SaaS Custom CSS Styling for Stunning UI/UX
+# SaaS Custom CSS Styling
 st.markdown("""
     <style>
-    /* Main Theme & Background */
     .stApp {
         background-color: #0f172a;
         color: #f8fafc;
     }
-    
-    /* SaaS Hero Banner */
     .saas-hero {
         background: linear-gradient(135deg, #6366f1 0%, #a855f7 50%, #ec4899 100%);
         padding: 2.5rem;
@@ -41,18 +38,6 @@ st.markdown("""
         font-size: 1.1rem;
         opacity: 0.9;
     }
-
-    /* Metric / Stats Card */
-    .metric-container {
-        background: rgba(30, 41, 59, 0.7);
-        border: 1px solid rgba(255, 255, 255, 0.1);
-        padding: 1.2rem;
-        border-radius: 12px;
-        text-align: center;
-        backdrop-filter: blur(10px);
-    }
-
-    /* Clip Output Card */
     .clip-card {
         background: #1e293b;
         border: 1px solid #334155;
@@ -65,8 +50,6 @@ st.markdown("""
         border-color: #6366f1;
         transform: translateY(-2px);
     }
-
-    /* Buttons Styling */
     .stButton>button {
         background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%);
         color: white;
@@ -88,24 +71,18 @@ st.markdown("""
 st.markdown("""
     <div class="saas-hero">
         <h1>⚡ ClipCraft AI Studio</h1>
-        <p>Transform long-form YouTube videos into viral TikToks, Reels & Shorts using next-gen AI.</p>
+        <p>Transform long-form YouTube videos into viral TikToks, Reels & Shorts instantly—Free & No Login Required!</p>
     </div>
 """, unsafe_allow_html=True)
 
-# Sidebar SaaS Navigation & Controls
+# Sidebar Config (No API Key required for users now!)
 with st.sidebar:
     st.image("https://img.icons8.com/clouds/100/video-trimming.png", width=80)
     st.markdown("### 🛠️ Workspace Control")
-    
-    api_key = st.text_input("🔑 Gemini API Key:", type="password", help="Enter your free Google AI Studio API key.")
-    
-    st.markdown("---")
-    st.markdown("### ⚙️ AI Generation Config")
     num_clips = st.slider("Target Clips Count", min_value=2, max_value=6, value=4)
     target_platform = st.selectbox("Platform Format", ["TikTok / Reels / Shorts (9:16)", "YouTube Standard (16:9)"])
-    
     st.markdown("---")
-    st.info("💡 **SaaS Status:** System operational. Zero monthly fees. 100% Open Source.")
+    st.info("💡 **SaaS Status:** Public Free Tier Active. Enjoy unlimited short clips generation!")
 
 # Helper Function: Extract YouTube Video ID
 def extract_video_id(url):
@@ -113,29 +90,24 @@ def extract_video_id(url):
     match = re.search(pattern, url)
     return match.group(1) if match else None
 
-# Main Input Section inside a SaaS Card container
+# Main Input Section
 st.markdown("### 📥 Project Input")
-col_input1, col_input2 = st.compat_loaders if hasattr(st, 'compat_loaders') else st.columns([4, 1])
-
-with col_input1:
-    video_url = st.text_input("YouTube Video URL", placeholder="https://www.youtube.com/watch?v=...", label_visibility="collapsed")
+video_url = st.text_input("YouTube Video URL", placeholder="https://www.youtube.com/watch?v=...", label_visibility="collapsed")
 
 generate_btn = st.button("🚀 Analyze & Generate Viral Shorts")
 
 if generate_btn:
-    if not api_key:
-        st.error("⚠️ Please enter your Gemini API Key in the sidebar to proceed.")
-    elif not video_url:
-        st.warning("⚠️ Please provide a valid YouTube video URL.")
+    if not video_url:
+        st.warning("⚠️ অনুগ্রহ করে একটি সঠিক ইউটিউব ভিডিও লিঙ্ক দিন।")
     else:
         video_id = extract_video_id(video_url)
         if not video_id:
-            st.error("❌ Invalid YouTube URL format. Please check and try again.")
+            st.error("❌ ভুল ইউটিউব URL! সঠিক লিঙ্ক প্রদান করুন।")
         else:
             progress_bar = st.progress(0)
             status_text = st.empty()
             
-            status_text.text("🔄 Connecting to YouTube Data Stream...")
+            status_text.text("🔄 ইউটিউব ডাটা প্রসেস হচ্ছে...")
             progress_bar.progress(25)
             
             try:
@@ -149,11 +121,17 @@ if generate_btn:
                     text = item['text']
                     full_transcript_text += f"[{start_time}s - {start_time+duration}s]: {text}\n"
 
-                status_text.text("🧠 AI Neural Engine analyzing hooks and viral patterns...")
+                status_text.text("🧠 AI ভাইরাল হুক এবং সেরা অংশগুলো খুঁজছে...")
                 progress_bar.progress(60)
 
-                # Gemini API Call
-                client = genai.Client(api_key=api_key)
+                # Get API Key securely from Streamlit Secrets (or fallback directly if needed)
+                try:
+                    gemini_api_key = st.secrets["GEMINI_API_KEY"]
+                except:
+                    # Temporary fallback if secrets not set yet (You can put your key here securely for testing)
+                    gemini_api_key = "YOUR_GEMINI_API_KEY_HERE"
+
+                client = genai.Client(api_key=gemini_api_key)
                 
                 prompt = f"""
                 You are an elite AI growth hacker and viral video editor like OpusClip.
@@ -186,14 +164,14 @@ if generate_btn:
                 )
 
                 progress_bar.progress(90)
-                status_text.text("✨ Rendering SaaS Dashboard Results...")
+                status_text.text("✨ ড্যাশবোর্ড রেন্ডার করা হচ্ছে...")
                 
                 results = json.loads(response.text)
                 progress_bar.progress(100)
                 status_text.empty()
                 progress_bar.empty()
 
-                st.success(f"🎉 Successfully extracted {len(results)} high-potential viral segments!")
+                st.success(f"🎉 সফলভাবে {len(results)}টি ভাইরাল শর্টস সেগমেন্ট খুঁজে পাওয়া গেছে!")
                 st.markdown("---")
                 st.markdown("### 🔥 Generated Viral Shorts Dashboard")
 
@@ -202,19 +180,17 @@ if generate_btn:
                         st.markdown(f"""
                         <div class="clip-card">
                             <h3>🎬 Clip #{idx}: {clip.get('title')}</h3>
-                            <p style='color: #94a3b8; font-size: 0.9rem;'>⏱️ <b>Timestamp:</b> {clip.get('start_time')}s — {clip.get('end_time')}s &nbsp;|&nbsp; 📈 <b>Viral Score:</b> <span style='color: #22c55e; font-weight: bold;'>{clip.get('viral_score')}/100</span></p>
-                            <p>💡 <b>Hook Analysis:</b> {clip.get('hook')}</p>
+                            <p style='color: #94a3b8; font-size: 0.9rem;'>⏱️ <b>টাইমস্ট্যাম্প:</b> {clip.get('start_time')}s — {clip.get('end_time')}s &nbsp;|&nbsp; 📈 <b>ভাইরাল স্কোর:</b> <span style='color: #22c55e; font-weight: bold;'>{clip.get('viral_score')}/100</span></p>
+                            <p>💡 <b>হুক অ্যানালাইসিস:</b> {clip.get('hook')}</p>
                             <hr style='border-color: #334155;'>
-                            <p style='background: #0f172a; padding: 10px; border-radius: 6px;'>📝 <b>Caption & Tags:</b><br>{clip.get('suggested_caption')}</p>
+                            <p style='background: #0f172a; padding: 10px; border-radius: 6px;'>📝 <b>ক্যাপশন ও হ্যাশট্যাগ:</b><br>{clip.get('suggested_caption')}</p>
                         </div>
                         """, unsafe_allow_html=True)
                         
-                        col_link1, col_link2 = st.columns([1, 1])
-                        with col_link1:
-                            yt_time_link = f"https://www.youtube.com/watch?v={video_id}&t={clip.get('start_time')}s"
-                            st.markdown(f"[🔗 Watch Segment on YouTube]({yt_time_link})")
+                        yt_time_link = f"https://www.youtube.com/watch?v={video_id}&t={clip.get('start_time')}s"
+                        st.markdown(f"[🔗 ইউটিউবে এই অংশটি সরাসরি দেখুন]({yt_time_link})")
 
             except Exception as e:
                 progress_bar.empty()
                 status_text.empty()
-                st.error(f"❌ Error processing video: {str(e)}")
+                st.error(f"❌ প্রসেস করার সময় ভুল হয়েছে: {str(e)}")
